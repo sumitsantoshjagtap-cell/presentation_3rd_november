@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pharmacovigilance Signal Dashboard (Prototype)</title>
+<style>
+:root{--bg:#d6ecfa;--flow:#ffe9f0;--bd:#8fa6bb;--kpi:#f2faf2;--tab:#fff7ea;--ub:#e9e0ff;--uc:#55269e;--card:#fff;--ink:#14202e;--mut:#5d6b7c;--line:#dde3ea;--acc:#1f5fbf;--bx:#b42318;--bxb:#fde8e6;--ev:#9a5b00;--evb:#fff1d6;--ok:#13705a;--okb:#dcf5ec;--na:#4b5563;--nab:#e8ebef}
+@media all{:root[data-theme="dark"]{color-scheme:dark;--bd:#3d4e60;--flow:#16202b;--kpi:#16202b;--tab:#16202b;--ub:#3a2b0b;--uc:#ffc766;--bg:#0e141b;--card:#16202b;--ink:#e6edf5;--mut:#98a6b6;--line:#26333f;--acc:#6aa5ff;--bx:#ff9a90;--bxb:#3b1a18;--ev:#ffc766;--evb:#3a2b0b;--ok:#6fdcb8;--okb:#0f2f27;--na:#b6c0cc;--nab:#232d38}}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:14px 22px 8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline}
+h1{font-size:18px;margin:0}h1 small{font-weight:400;color:var(--mut);font-size:12px;margin-left:8px}
+.banner{background:var(--evb);color:var(--ev);border:1px solid var(--ev);border-radius:6px;padding:4px 10px;font-size:12px}
+.flow{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 22px;overflow-x:auto}
+.flow ol{list-style:none;margin:0;padding:0;display:flex;gap:6px;min-width:860px;align-items:stretch}
+.st{flex:1;background:var(--flow);border:1.5px solid var(--bd);border-radius:8px;padding:6px 8px;position:relative;transition:.25s}
+.st b{display:block;font-size:11px;color:var(--mut);letter-spacing:.3px}.st span{font-size:12px}.st em{display:block;font-style:normal;font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.st.on{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 30%,transparent)}
+.st:not(:last-child)::after{content:"›";position:absolute;right:-8px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:16px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;animation:p 1.6s infinite}@keyframes p{50%{opacity:.25}}
+main{padding:14px 22px 30px;display:grid;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.card{background:var(--card);border:1.5px solid var(--bd);border-radius:10px;padding:12px 14px}
+.card.k{background:var(--kpi)}.card.tab{background:var(--tab)}.k b{display:block;font-size:21px;font-variant-numeric:tabular-nums}.k span{color:var(--mut);font-size:12px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.chip,select,input[type=search]{border:1.5px solid var(--bd);background:var(--card);color:var(--ink);border-radius:16px;padding:4px 11px;font:inherit;font-size:12px;cursor:pointer}
+.chip.sel{background:var(--acc);color:#fff;border-color:var(--acc)}input[type=search]{border-radius:6px;min-width:150px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:860px}
+th{font-size:11px;text-align:left;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}tr.r{cursor:pointer}tr.r:hover{background:color-mix(in srgb,var(--acc) 7%,transparent)}
+.rk{color:var(--mut);width:30px;font-variant-numeric:tabular-nums}.dn{font-weight:600}.sim{font-size:10px;color:var(--na);background:var(--nab);border-radius:4px;padding:0 4px;margin-left:5px}
+.bar{height:7px;background:var(--nab);border-radius:4px;width:90px;display:inline-block;vertical-align:middle;margin-right:7px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
+.bd{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.B{background:var(--bxb);color:var(--bx)}.U{background:var(--ub);color:var(--uc)}.C{background:var(--okb);color:var(--ok)}.N{background:var(--nab);color:var(--na)}
+.t{font-size:11px;color:var(--mut)}tr.d td{background:color-mix(in srgb,var(--acc) 5%,transparent);padding:10px 14px}
+.dg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px 16px}.dg div span{display:block;font-size:11px;color:var(--mut)}
+#log{height:330px;overflow:hidden;font:11.5px/1.5 ui-monospace,Menlo,monospace;color:var(--mut)}#log div{border-bottom:1px dashed var(--line);padding:2px 0;animation:in .4s}@keyframes in{from{opacity:0;transform:translateY(-4px)}}
+#log b{color:var(--ink);font-weight:600}h2{font-size:13px;margin:0 0 8px}.foot{font-size:12px;color:var(--mut)}
+</style><script>document.documentElement.dataset.theme=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"</script></head><body>
+<header><h1>Signal Prioritisation Dashboard<small>Dual-pipeline pharmacovigilance · prototype</small></h1>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="chip" id="th" aria-label="Toggle light or dark theme"></button><div class="banner">PROTOTYPE · ML outputs, demographics &amp; “no action” rows are simulated · FDA action labels retrieved 3 Nov 2026</div></div></header>
+
+<nav class="flow" aria-label="Pipeline flow"><ol id="flow"></ol></nav>
+
+<main>
+<section class="kpis" id="kpis"></section>
+<section class="grid">
+<div class="card tab">
+ <div class="tools" id="tools"></div>
+ <div class="tw"><table><thead><tr><th>#</th><th>Drug</th><th>Most likely adverse effect (MedDRA PT)</th><th>ML priority score</th><th>Tier</th><th>FDA action</th><th>Most affected demographic</th></tr></thead><tbody id="tb"></tbody></table></div>
+ <p class="foot">Click a row for detector and feature detail. Score = XGBoost walk-forward output (rank-normalised 0–100), i.e. likelihood the pair attracts regulatory action, not a causal probability. Tiers: 1 = LRT+XGBoost co-flag · 2 = single-method flag · 3 = Isolation-Forest watchlist.</p>
+</div>
+<aside class="card"><h2><span class="dot"></span>Ingest stream · AEMS (formerly FAERS)</h2><div id="log"></div><p class="foot">Simulated stream for demonstration. No external data is being fetched by this page.</p></aside>
+</section>
+</main>
+
+<script>
+// [drug, adverse effect, score, action, demographic, share %, action detail, simulated?]
+const D=[
+["Tavneos (avacopan)","Drug-induced liver injury",96,"U","Mixed · 55–74 y",58,"Under re-evaluation · approval withdrawal proposed"],
+["Injectafer (ferric carboxymaltose)","Hypophosphataemia",94,"B","Female · 30–64 y",74,"Boxed warning added"],
+["Prolia (denosumab)","Hypocalcaemia",92,"B","Female · 65+ y",81,"Boxed warning (advanced CKD)"],
+["Adzynma (ADAMTS13, recombinant)","ADAMTS13 neutralising antibodies",90,"B","Mixed · 18–54 y",55,"Boxed warning (safety labeling change order)"],
+["Ocrevus (ocrelizumab)","Pneumonitis",88,"U","Female · 40–59 y",64,"FDA evaluating need for action (anti-CD20 class)"],
+["Valproate sodium","Pleural effusion",86,"U","Female · 18–44 y",62,"FDA evaluating need for action"],
+["Capecitabine / fluorouracil","Fluoropyrimidine toxicity (DPD deficiency)",85,"B","Mixed · 55–74 y",60,"Boxed warning (DPD deficiency)"],
+["Attruby (acoramidis)","Renal impairment",83,"U","Male · 70–84 y",69,"FDA evaluating need for action"],
+["Copaxone / Glatopa (glatiramer)","Anaphylactic reaction",81,"B","Female · 30–49 y",77,"Boxed warning added"],
+["Abecma (idecabtagene vicleucel)","Immune effector cell-assoc. enterocolitis",79,"U","Male · 60–74 y",57,"FDA evaluating need for action"],
+["Dupilumab","Conjunctivitis",77,"N","Mixed · 18–44 y",52,"No FDA safety action",1],
+["Braftovi (encorafenib)","Pancreatitis",75,"U","Mixed · 55–74 y",54,"FDA evaluating need for action (BRAF class)"],
+["Ojemda (tovorafenib)","Pancreatitis",73,"U","Paediatric · 6–17 y",71,"FDA evaluating need for action (BRAF class)"],
+["Semaglutide (Ozempic / Wegovy)","Suicidal ideation",71,"C","Female · 35–54 y",66,"Reviewed · suicidality warning removal requested"],
+["Altuviiio (efanesoctocog alfa)","Thromboembolic event",70,"U","Male · 12–40 y",83,"FDA evaluating need for action"],
+["Elrexfio (elranatamab)","Uveitis",68,"U","Mixed · 65–84 y",59,"FDA evaluating need for action"],
+["Tecvayli (teclistamab)","Uveitis",67,"U","Mixed · 65–84 y",58,"FDA evaluating need for action"],
+["Beyfortus (nirsevimab)","Immune thrombocytopenia",65,"U","Infant · 0–12 mo",91,"FDA evaluating need for action"],
+["Apixaban","Gastrointestinal haemorrhage",63,"N","Mixed · 75+ y",63,"No FDA safety action",1],
+["Liraglutide (Victoza / Saxenda)","Suicidal ideation",61,"C","Female · 35–64 y",68,"Reviewed · suicidality warning removal requested"],
+["Kesimpta (ofatumumab)","Serum sickness",59,"U","Female · 35–55 y",67,"FDA evaluating need for action (anti-CD20 class)"],
+["Elahere (mirvetuximab)","Extravasation",57,"U","Female · 55–74 y",96,"FDA evaluating need for action"],
+["Turalio (pexidartinib)","Posterior reversible encephalopathy",55,"C","Female · 25–54 y",70,"Reviewed · no action needed at this time"],
+["CNS stimulants (class)","Electrocardiogram QT prolonged",53,"C","Male · 6–17 y",56,"Reviewed · no action needed at this time"],
+["Elucirem (gadopiclenol)","Anaphylactic reaction",51,"U","Mixed · 35–64 y",50,"FDA evaluating need for action"],
+["Zelboraf (vemurafenib)","Haemophagocytic lymphohistiocytosis",49,"C","Male · 55–74 y",58,"Reviewed · no action needed at this time"],
+["Sacubitril / valsartan","Angioedema",47,"N","Male · 65–84 y",61,"No FDA safety action",1],
+["Tarceva (erlotinib)","Cardiac failure",44,"C","Female · 55–74 y",57,"Reviewed · no action needed at this time"]
+];
+const AL={B:"Black-boxed",U:"Under scrutiny",C:"Reviewed – no action needed",N:"No action"};
+const $=id=>document.getElementById(id);
+const h=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x)};
+const fmt=n=>n.toLocaleString("en-US");
+const tier=s=>s>=80?1:s>=55?2:3;
+let filt="all",q="",hideSettled=false,open=null;
+
+// derived (simulated) detector/feature values, deterministic per row
+const rows=D.map((r,i)=>{const s=r[2]/100,a=h(i,1),b=h(i,2),c=h(i,3);
+ return{n:r[0],pt:r[1],s:r[2],act:r[3],dem:r[4],sh:r[5],ad:r[6],sim:r[7],
+ lrt:Math.round(60+s*s*880*(.6+a)),prr:(2+s*13*(.7+b*.6)).toFixed(1),eb:(2+s*8*(.8+c*.4)).toFixed(1),ic:(.5+s*3*(.8+a*.4)).toFixed(2),
+ a:Math.round(25+s*s*1700*(.5+b)),ser:Math.round(52+c*38),on:Math.round(4+a*110),vel:(s*(1.2+b)*40).toFixed(0),
+ str:1+Math.floor(s*5*(.4+c)),sp:(2+s*16*(.9+a*.7)).toFixed(1)}});
+
+// flow
+const ST=[["SOURCE","AEMS / FAERS feed","+0 today"],["L1","Ingest","20,692,689 cases"],["L2","Dedup · RxNorm · MedDRA","90 quarters"],["L3","Detectors (LRT)","1,020,630 flagged"],["L4","24 as-of features","55.9M rows"],["L5–6","XGBoost walk-forward","46.5M scored"],["L7","Rank · evaluate","1.22M pairs"],["OUTPUT","Reviewer queue","28 shown"]];
+$("flow").innerHTML=ST.map((s,i)=>`<li class="st" id="st${i}"><b>${s[0]}</b><span>${s[1]}</span><em id="sv${i}">${s[2]}</em></li>`).join("");
+
+// KPIs
+function kpis(){const c=k=>rows.filter(r=>r.act===k).length;
+ $("kpis").innerHTML=[["28","Pairs in view (top-ranked)"],[c("B"),"Black-boxed"],[c("U"),"Under scrutiny"],[c("C"),"Reviewed – no action needed"],[c("N"),"No action (reviewer queue)"],["77.4%","Pipeline E1 (early detection), 12 Q median lead"]]
+ .map(k=>`<div class="card k"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("")}
+kpis();
+
+// tools
+function tools(){const f=[["all","All"],["B","Black-boxed"],["U","Under scrutiny"],["C","Reviewed – no action needed"],["N","No action"]];
+ $("tools").innerHTML=f.map(x=>`<button class="chip ${filt===x[0]?"sel":""}" data-f="${x[0]}">${x[1]}</button>`).join("")+
+ `<label class="chip"><input type="checkbox" id="hs" ${hideSettled?"checked":""}> Reviewer queue only (hide boxed / reviewed)</label><input type="search" id="q" placeholder="Search drug or event" value="${q}">`;
+ document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{filt=b.dataset.f;render()});
+ $("hs").onchange=e=>{hideSettled=e.target.checked;render()};
+ $("q").oninput=e=>{q=e.target.value.toLowerCase();render(true)}}
+
+function render(keep){if(!keep)tools();
+ const v=rows.map((r,i)=>({...r,rk:i+1})).filter(r=>(filt==="all"||r.act===filt)&&(!hideSettled||r.act==="U"||r.act==="N")&&(r.n+r.pt).toLowerCase().includes(q));
+ $("tb").innerHTML=v.map(r=>`<tr class="r" data-i="${r.rk}"><td class="rk">${r.rk}</td><td class="dn">${r.n}${r.sim?'<span class="sim">simulated</span>':""}</td><td>${r.pt}</td>
+ <td><span class="bar"><i style="width:${r.s}%"></i></span>${r.s}</td><td>T${tier(r.s)}</td><td><span class="bd ${r.act}">${AL[r.act]}</span><div class="t">${r.ad}</div></td>
+ <td>${r.dem}<div class="t">${r.sh}% of reports</div></td></tr>`+(open===r.rk?det(r):"")).join("")||`<tr><td colspan="7" class="t">No matches.</td></tr>`;
+ document.querySelectorAll("tr.r").forEach(t=>t.onclick=()=>{open=open===+t.dataset.i?null:+t.dataset.i;render(true)})}
+function det(r){const m=[["LRT log-likelihood",fmt(r.lrt)],["PRR",r.prr],["EB05",r.eb],["IC025",r.ic],["Co-reports (a)",fmt(r.a)],["Serious outcomes",r.ser+"%"],["Median onset",r.on+" days"],["Report velocity (4Q)","+"+r.vel+"%"],["Strata flagged",r.str],["Max stratum PRR",r.sp]];
+ return`<tr class="d"><td></td><td colspan="6"><div class="dg">${m.map(x=>`<div><span>${x[0]}</span>${x[1]}</div>`).join("")}</div></td></tr>`}
+render();
+
+// theme toggle
+const R=document.documentElement,tb=$("th");
+const lab=()=>tb.textContent=R.dataset.theme==="dark"?"☀ Light theme":"☾ Dark theme";
+tb.onclick=()=>{R.dataset.theme=R.dataset.theme==="dark"?"light":"dark";lab()};lab();
+// simulated live ingest
+let total=20692689,today=0,tick=0;
+function ingest(){tick++;const n=40+Math.floor(Math.random()*260),r=rows[Math.floor(Math.random()*rows.length)];
+ total+=n;today+=n;const now=new Date().toLocaleTimeString("en-GB");
+ const L=$("log");L.insertAdjacentHTML("afterbegin",`<div>${now} <b>+${n}</b> reports · ${r.n.split(" (")[0]} · ${r.pt.length>26?r.pt.slice(0,26)+"…":r.pt}</div>`);
+ while(L.children.length>14)L.lastChild.remove();
+ $("sv0").textContent="+"+fmt(today)+" today";$("sv1").textContent=fmt(total)+" cases";
+ const k=tick%ST.length;document.querySelectorAll(".st").forEach((e,i)=>e.classList.toggle("on",i===k))}
+setInterval(ingest,1500);ingest();
+</script></body></html>
